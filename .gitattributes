@@ -1,3 +1,5 @@
+models/bert_extra.zip filter=lfs diff=lfs merge=lfs -text
+models/vosk-model-small-ru-0.22.zip filter=lfs diff=lfs merge=lfs -text
 ./models/* filter=lfs diff=lfs merge=lfs -text
 /models/bert_extra.zip filter=lfs diff=lfs merge=lfs -text
 /models/vosk-model-small-ru-0.22.zip filter=lfs diff=lfs merge=lfs -text
