@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "int-console"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pymorphy3 = "2.0.2"
+torch = "2.4.1"
+vosk = "0.3.45"
+transformers = "4.45.2"
+librosa = "0.10.2.post1"
+numpy = "2.0.2"
+soundfile = "0.12.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
