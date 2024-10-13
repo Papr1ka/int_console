@@ -65,7 +65,7 @@ Peak RAM за всё время
 ```bash
 .
 ├── adaptate_vosk - Адаптирование модели VOSK
-├── bert_extra - Модель BERT tiny
+├── bert_extra - Модель BERT tiny - (после распаковки архивов с моделями)
 ├── get_submission.py - финальный pipiline (1/2 файл)
 ├── model.py - финальный pipiline (2/2 файл)
 ├── images - картинки
@@ -89,7 +89,7 @@ Peak RAM за всё время
 ├── validation - выборка, на которой производилась валидация (все метрики по ней)
 │   ├── new_folder_with_audios.zip
 │   └── validation_data_with_transcriptions.csv
-└── vosk-model-small-ru-0.22 - модель VOSK (аудио2текст)
+└── vosk-model-small-ru-0.22 - модель VOSK (аудио2текст) (после распаковки архивов с моделями)
 ```
 
 Работа_с_текстом_и_ключ_словами.ipynb - Тестовый вариант классификации, который не используется в финальном решении. Показал F1 ~0.8.
