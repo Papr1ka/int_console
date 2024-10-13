@@ -69,6 +69,7 @@
 ├── notebooks - Обучение, ipynb файлы
 │   ├── generated.csv
 │   ├── trans_text_all.csv
+│   ├── Порождение_аугментированных_команд.csv
 │   └── Обучение_BERT_классификатора.ipynb
 ├── poetry.lock
 ├── pyproject.toml
