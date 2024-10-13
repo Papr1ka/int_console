@@ -11,11 +11,13 @@ import numpy as np
 import wave
 import soundfile as sf
 import settings
+import os
+import psutil
 
 model = Model(settings.VOSK)
 recognizer = KaldiRecognizer(model, 16000)
 
-morph = pymorphy3.MorphAnalyzer(lang='ru')
+morph = pymorphy3.MorphAnalyzer(lang="ru")
 
 clf_path = settings.BERT
 classifier = BertForSequenceClassification.from_pretrained(clf_path)
@@ -34,7 +36,7 @@ def classify(text):
         int:  Предсказанный label
     """
 
-    tokenized_text = tokenizer([text], return_tensors='pt')
+    tokenized_text = tokenizer([text], return_tensors="pt")
 
     with torch.no_grad():
         outputs = classifier(**tokenized_text)
@@ -85,7 +87,7 @@ def text_to_num(words):
         "семьдесят": 70,
         "восемьдесят": 80,
         "девяносто": 90,
-        "сто": 100
+        "сто": 100,
     }
 
     num = 0
@@ -108,10 +110,12 @@ def get_num(line):
         int: Численное значение атрибута или -1, если не нашлось числительных
     """
 
-    words = line.split(' ')
+    words = line.split(" ")
 
     # morph = pymorphy2.MorphAnalyzer(lang='ru')
-    nums = [word for word in words if 'NUMR' in morph.parse(word)[0].tag]  # Отбор числительных
+    nums = [
+        word for word in words if "NUMR" in morph.parse(word)[0].tag
+    ]  # Отбор числительных
 
     if nums:
         return text_to_num(nums)
@@ -148,14 +152,25 @@ def preprocess(text):
     Returns:
         str: Строка, состоящая из лемматизированных слов
     """
-    text = text.replace('ё', 'е')
-    text = re.sub(r'[^а-яА-ЯёЁ\s]', ' ', text)
-    text = re.sub(r'\s+', ' ', text).strip()
-    return ' '.join([morph.parse(word)[0].normal_form for word in text.split(' ')])
+    text = text.replace("ё", "е")
+    text = re.sub(r"[^а-яА-ЯёЁ\s]", " ", text)
+    text = re.sub(r"\s+", " ", text).strip()
+    return " ".join([morph.parse(word)[0].normal_form for word in text.split(" ")])
 
 
-# Функция для оценки шума (например, по первым 0.5 секундам)
+# Функция для оценки шума (по первым 0.5 секундам)
 def estimate_noise(y, sr, noise_duration=0.5):
+    """
+    Оценивает уровень шума в аудиосигнале на основе первых нескольких секунд.
+
+    Args:
+        y (np.ndarray): Аудиосигнал в виде массива чисел (например, от librosa).
+        sr (int): Частота дискретизации аудиосигнала.
+        noise_duration (float): Длительность сегмента для оценки шума в секундах. По умолчанию 0.5.
+
+    Returns:
+        np.ndarray: Среднее значение спектра шума, рассчитанное на основе STFT.
+    """
     noise_samples = int(noise_duration * sr)
     noise_part = y[:noise_samples]
     stft_noise = np.abs(librosa.stft(noise_part))
@@ -164,6 +179,17 @@ def estimate_noise(y, sr, noise_duration=0.5):
 
 # Применение спектрального вычитания
 def spectral_subtraction(y, sr, noise_est):
+    """
+    Применяет спектральное вычитание для удаления шума из аудиосигнала.
+
+    Args:
+        y (np.ndarray): Аудиосигнал в виде массива чисел.
+        sr (int): Частота дискретизации аудиосигнала.
+        noise_est (np.ndarray): Оценка спектра шума.
+
+    Returns:
+        np.ndarray: Очищенный аудиосигнал после применения спектрального вычитания.
+    """
     stft_speech = librosa.stft(y)
     magnitude_speech = np.abs(stft_speech)
     phase_speech = np.angle(stft_speech)
@@ -179,61 +205,95 @@ def spectral_subtraction(y, sr, noise_est):
 
 
 def filter_noise(input_file, output_file):
-    # Загружаем аудиофайл
+    """
+    Фильтрует шум из аудиофайла, используя спектральное вычитание и сохраняет очищенный файл.
+
+    Args:
+        input_file (str): Путь к входному аудиофайлу.
+        output_file (str): Путь для сохранения очищенного аудиофайла.
+    """
+
     data, samplerate = librosa.load(input_file, sr=None)
-
-    # Оцениваем шум
     noise_estimation = estimate_noise(data, samplerate)
-
-    # Применяем спектральное вычитание
     cleaned_data = spectral_subtraction(data, samplerate, noise_estimation)
-
-    # Сохраняем очищенный аудиофайл
     sf.write(output_file, cleaned_data, samplerate)
 
 
 def check_and_convert_sample_rate(input_file, target_sample_rate=16000):
-    # Используем librosa для получения текущего sample rate
-    data, samplerate = librosa.load(input_file, sr=None)
+    """
+    Проверяет и при необходимости изменяет частоту дискретизации аудиофайла.
 
+    Args:
+        input_file (str): Путь к входному аудиофайлу.
+        target_sample_rate (int): Целевая частота дискретизации в Герцах. По умолчанию 16000.
+
+    Returns:
+        str: Путь к аудиофайлу с нужной частотой дискретизации.
+    """
+    data, samplerate = librosa.load(input_file, sr=None)
     if samplerate != target_sample_rate:
         output_file = "converted_audio.wav"
-        
+
         # Команда ffmpeg для изменения sample rate
-        subprocess.run([
-            "ffmpeg", "-i", input_file, "-ar", str(target_sample_rate), output_file, "-y"
-        ])
-        
-        return output_file  # Возвращаем путь к новому файлу с 16000 Hz
+        subprocess.run(
+            [
+                "ffmpeg",
+                "-i",
+                input_file,
+                "-ar",
+                str(target_sample_rate),
+                output_file,
+                "-y",
+            ]
+        )
+
+        return output_file
     else:
-        return input_file  # Если всё в порядке, возвращаем исходный файл
+        return input_file
+
 
 def trans_one_audio(file_path):
+    """
+    Транскрибирует аудиофайл и извлекает текст.
+
+    Args:
+        file_path (str): Путь к аудиофайлу для транскрибирования.
+
+    Returns:
+        str: Текст, полученный в результате транскрибирования аудиофайла.
+    """
+    global recognizer
+    pid = os.getpid()
+    python_process = psutil.Process(pid)
+    memoryUse = python_process.memory_info()[0] / 2.0**30
+
+    # Если ОЗУ вышла за порог, инициализируем новый recognizer
+    if memoryUse > 0.8:
+        recognizer = KaldiRecognizer(model, 16000)
+
     temp_cleaned_file = "cleaned_audio.wav"
     file_path = check_and_convert_sample_rate(file_path)
     filter_noise(file_path, temp_cleaned_file)
-    wf = wave.open(temp_cleaned_file, "rb")
 
-    full_text = ""
+    with wave.open(temp_cleaned_file, "rb") as wf:
+        full_text = ""
 
-    while True:
-        data = wf.readframes(4000)  # Читаем 4000 фреймов за раз
-        if len(data) == 0:
-            break
-        if recognizer.AcceptWaveform(data):
-            result = recognizer.Result()
-            # Извлекаем текст и добавляем его в полный текст
-            full_text += eval(result)['text'] + " "
-        else:
-            # Можно игнорировать частичные результаты или использовать их
-            recognizer.PartialResult()
+        while True:
+            data = wf.readframes(4000)  # Читаем 4000 фреймов за раз
+            if len(data) == 0:
+                break
+            if recognizer.AcceptWaveform(data):
+                result = recognizer.Result()
+                # Извлекаем текст и добавляем его в полный текст
+                full_text += eval(result)["text"] + " "
+            else:
+                # Можно игнорировать частичные результаты или использовать их
+                recognizer.PartialResult()
 
-    # Финальный результат
-    final_result = recognizer.FinalResult()
-    full_text += eval(final_result)['text']
+        # Финальный результат
+        final_result = recognizer.FinalResult()
+        full_text += eval(final_result)["text"]
 
-    # Закрываем файл
-    wf.close()
     return full_text.strip()
 
 
@@ -249,16 +309,15 @@ def form_answer(audio_file):
     """
 
     start = time.time()
-    res = {'text': trans_one_audio(audio_file)}
-    print(f'Vosk: {(time.time() - start) * 1000} ms')
+    res = {"text": trans_one_audio(audio_file)}
+    print(f"Vosk: {(time.time() - start) * 1000} ms")
+    start = time.time()
+    res["label"] = classify(res["text"])
+    print(f"Bert: {(time.time() - start) * 1000} ms")
 
     start = time.time()
-    res['label'] = classify(res['text'])
-    print(f'Bert: {(time.time() - start) * 1000} ms')
-
-    start = time.time()
-    prep_text = preprocess(res['text'])
-    res['attribute'] = get_attribute(prep_text, res['label'])
-    print(f'Attributes: {(time.time() - start) * 1000} ms')
+    prep_text = preprocess(res["text"])
+    res["attribute"] = get_attribute(prep_text, res["label"])
+    print(f"Attributes: {(time.time() - start) * 1000} ms")
 
     return res

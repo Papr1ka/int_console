@@ -31,14 +31,17 @@
 
 ## Метрики
 
-| Показатель | значение |
+| Metric | Value |
 | :-: | :-: |
-| F1 взвешенная | 0.916 |
+| $F1_{weighted}$ | 0.916 |
 | WER | 0.228 |
-| Задержка (для 1-й секунды) | 50 мс |
-| Потребление ОЗУ | 740 МБ |
+| Latency (CPU) | 70 ms |
+| Peak RAM | 800 MB |
 
 Оборудование: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
+
+Latency для 1 сек. записи
+Peak RAM за всё время
 
 #### Описание выборки
 
@@ -67,8 +70,7 @@
 ├── model.py - финальный pipiline (2/2 файл)
 ├── images - картинки
 ├── models
-│   ├── bert_extra.zip - без случайного срабатывания
-│   ├── bert_noised.zip - финальная версия
+│   ├── bert_noised.zip - финальная версия текстового классификатора
 │   └── vosk-model-small-ru-0.22.zip - аудио2текст
 ├── notebooks - Обучение, ipynb файлы
 │   ├── generated.csv
@@ -115,7 +117,6 @@ https://drive.google.com/drive/folders/1qFuadah5KmB638Ena6m-_K3teq5-Dnbi?usp=sha
 Для работы модели необходимы папки bert_noised и vosk-model-small-ru-0.22.
 
 validation - датасет для валидации.
-bert_extra - промежуточный вариант классификатора, не финальный. 
 
 3. Установите зависимости
 
