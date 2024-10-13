@@ -93,19 +93,22 @@
 
 ## Развёртывание
 
-1. Распакуйте модели в текущую директорию
+1. Клонирование репозитория
 
-`./utils/unpack.sh`
+`git clone https://github.com/Papr1ka/int_console.git`
+`cd ./int_console`
+
+Клонирование происходит с lfs, необходимо какое-то время подождать.
+
+2. Распакуйте модели в текущую директорию
+
+`./utils/unpack_models.sh`
 
 > Если вы на windows, можете разархивировать вручную, главное организуйте файлы в соответствии со [структурой выше](#файловая-структура)
 
-2. Установите зависимости
+3. Установите зависимости
 
 `poetry install`
-
-3. Скачайте датасет (опционально)
-
-`./utils/get_datasets.sh`
 
 4. Используйте!
 
@@ -113,7 +116,15 @@
 
 Пример:
 
-`poetry run python get_submission.py --src ESC_DATASET_v1.2/luga/21_11_2023/ --dst .`
+Можно скачать обучающий датасет:
+
+`./utils/get_datasets.sh`
+
+Чтобы получить предсказания на валидационной выбрке:
+
+`unzip validation/new_folder_with_audios.zip`
+
+`poetry run python get_submission.py --src ./new_folder_with_audios/ --dst .`
 
 ### Расширение команд
 

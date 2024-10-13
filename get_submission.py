@@ -5,6 +5,16 @@ import time
 import os
 import argparse
 import json
+import psutil
+
+RAM_STATS = []
+
+def check_mem():
+    global RAM_STATS
+    pid = os.getpid()
+    python_process = psutil.Process(pid)
+    memoryUse = python_process.memory_info()[0]/2.**30
+    RAM_STATS.append(memoryUse)
 
 
 class Predictor:
@@ -54,12 +64,16 @@ if __name__ == "__main__":
         start = time.time()
         print("processing", audio_path, "...")
         result = predictor(os.path.join(args.src, audio_path))
+        check_mem()
         print(f'Total time: {(time.time() - start) * 1000} ms')
         results.append(result)
         time_stats.append(time.time() - start)
-    print(sum(time_stats) / len(time_stats))
+    
+    print("Суммарное время обработки", sum(time_stats))
+    print("Максимум потребления ОЗУ", max(RAM_STATS), "Гб")
 
     with open(
         os.path.join(args.dst, "submission.json"), "w", encoding="utf-8"
     ) as outfile:
         json.dump(results, outfile)
+    print("Готово")
