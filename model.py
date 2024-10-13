@@ -268,7 +268,7 @@ def trans_one_audio(file_path):
     memoryUse = python_process.memory_info()[0] / 2.0**30
 
     # Если ОЗУ вышла за порог, инициализируем новый recognizer
-    if memoryUse > 0.8:
+    if memoryUse > 0.95:
         recognizer = KaldiRecognizer(model, 16000)
 
     temp_cleaned_file = "cleaned_audio.wav"
