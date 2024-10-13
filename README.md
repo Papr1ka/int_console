@@ -32,8 +32,8 @@
 
 | Показатель | значение |
 | :-: | :-: |
-| F1 взвешенная | :-: |
-| WER | :-: |
+| F1 взвешенная | 0.916 |
+| WER | 0.228 |
 | Задержка (для 1-й секунды) | 50 мс |
 | Потребление ОЗУ | :-: |
 
@@ -48,13 +48,17 @@
 | hr_bot_synt | 80% |
 | luga | 50% |
 
-Датасет доступен по [ссылке тут](https://lodmedia.hb.bizmrg.com/case_files/1144817/train_dataset_train_rzhd_pult.zip) [или тут](https://datasets.vniias.ru/tasks/1)
+Датасет данной выборки представлен в папке `./validation`
+
+Результаты - в файле `./validation/validation_data_with_transcriptions.csv`
+
+Обучающий датасет доступен по [ссылке тут](https://lodmedia.hb.bizmrg.com/case_files/1144817/train_dataset_train_rzhd_pult.zip) [или тут](https://datasets.vniias.ru/tasks/1)
 
 Также данный датасет можно скачать с помощью скрипта `./utils/get_datasets.sh`
 
 ## Развёртывание
 
-Файловая структура
+### Файловая структура
 
 ```bash
 .
