@@ -7,14 +7,12 @@ import argparse
 import json
 import psutil
 
-RAM_STATS = []
 
 def check_mem():
-    global RAM_STATS
     pid = os.getpid()
     python_process = psutil.Process(pid)
     memoryUse = python_process.memory_info()[0]/2.**30
-    RAM_STATS.append(memoryUse)
+    return memoryUse
 
 
 class Predictor:
@@ -70,7 +68,7 @@ if __name__ == "__main__":
         time_stats.append(time.time() - start)
     
     print("Суммарное время обработки", sum(time_stats))
-    print("Максимум потребления ОЗУ", max(RAM_STATS), "Гб")
+    print("ОЗУ", check_mem(), "Гб")
 
     with open(
         os.path.join(args.dst, "submission.json"), "w", encoding="utf-8"
