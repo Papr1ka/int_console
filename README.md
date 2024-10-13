@@ -96,6 +96,7 @@
 1. Клонирование репозитория
 
 `git clone https://github.com/Papr1ka/int_console.git`
+
 `cd ./int_console`
 
 Клонирование происходит с lfs, необходимо какое-то время подождать.
