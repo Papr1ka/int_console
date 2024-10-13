@@ -2,16 +2,14 @@ import pymorphy3
 import re
 import torch
 import time
-
+import subprocess
 
 from vosk import Model, KaldiRecognizer
 from transformers import BertForSequenceClassification, BertTokenizer
-
 import librosa
 import numpy as np
 import wave
 import soundfile as sf
-
 import settings
 
 model = Model(settings.VOSK)
@@ -19,9 +17,9 @@ recognizer = KaldiRecognizer(model, 16000)
 
 morph = pymorphy3.MorphAnalyzer(lang='ru')
 
-clf_path = 'bert_extra'
-classifier = BertForSequenceClassification.from_pretrained(settings.BERT)
-tokenizer = BertTokenizer.from_pretrained(settings.BERT)
+clf_path = settings.BERT
+classifier = BertForSequenceClassification.from_pretrained(clf_path)
+tokenizer = BertTokenizer.from_pretrained(clf_path)
 
 
 # Классификация команд
@@ -194,14 +192,27 @@ def filter_noise(input_file, output_file):
     sf.write(output_file, cleaned_data, samplerate)
 
 
+def check_and_convert_sample_rate(input_file, target_sample_rate=16000):
+    # Используем librosa для получения текущего sample rate
+    data, samplerate = librosa.load(input_file, sr=None)
+
+    if samplerate != target_sample_rate:
+        output_file = "converted_audio.wav"
+        
+        # Команда ffmpeg для изменения sample rate
+        subprocess.run([
+            "ffmpeg", "-i", input_file, "-ar", str(target_sample_rate), output_file, "-y"
+        ])
+        
+        return output_file  # Возвращаем путь к новому файлу с 16000 Hz
+    else:
+        return input_file  # Если всё в порядке, возвращаем исходный файл
+
 def trans_one_audio(file_path):
     temp_cleaned_file = "cleaned_audio.wav"
-    
-    if settings.USE_NOISE_REDUCE:
-        filter_noise(file_path, temp_cleaned_file)
-        wf = wave.open(temp_cleaned_file, "rb")
-    else:
-        wf = wave.open(file_path, "rb")
+    file_path = check_and_convert_sample_rate(file_path)
+    filter_noise(file_path, temp_cleaned_file)
+    wf = wave.open(temp_cleaned_file, "rb")
 
     full_text = ""
 

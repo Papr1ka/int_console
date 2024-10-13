@@ -54,9 +54,41 @@
 
 ## Развёртывание
 
+Файловая структура
+
+```bash
+.
+├── adaptate_vosk - Адаптирование модели VOSK
+├── bert_extra - Модель BERT tiny
+├── get_submission.py
+├── model.py
+├── models
+│   ├── bert_extra.zip - без случайного срабатывания
+│   ├── bert_noised.zip - финальная версия
+│   └── vosk-model-small-ru-0.22.zip - аудио2текст
+├── notebooks - Обучение, ipynb файлы
+│   ├── generated.csv
+│   ├── trans_text_all.csv
+│   └── Обучение_BERT_классификатора.ipynb
+├── poetry.lock
+├── pyproject.toml
+├── README.md
+├── requirements.txt
+├── settings.py - Настройки, можно выбрать модель берта и vosk
+├── utils
+│   ├── get_datasets.sh - скачать обучающий датасет
+│   └── unpack_models.sh - распаковать модели
+├── validation - выборка, на которой производилась валидация (все метрики по ней)
+│   ├── new_folder_with_audios.zip
+│   └── validation_data_with_transcriptions.csv
+└── vosk-model-small-ru-0.22 - модель VOSK (аудио2текст)
+```
+
 1. Распакуйте модели в текущую директорию
 
 `./utils/unpack.sh`
+
+> Если вы на windows, можете разархивировать вручную, главное организуйте файлы в соответствии со структурой выше
 
 2. Установите зависимости
 
@@ -68,14 +100,12 @@
 
 4. Используйте!
 
-`python get_submission.py --src {путь до папки с аудио} --dst {путь до папки с будущим результатом}`
+`poetry run python get_submission.py --src {путь до папки с аудио} --dst {путь до папки с будущим результатом}`
 
 Пример:
 
-`python get_submission.py --src ./ESC_DATASET_v1.2/luga/02_11_2023 --dst .`
+`poetry run python get_submission.py --src ESC_DATASET_v1.2/luga/21_11_2023/ --dst .`
 
 ### Расширение команд
 
 Чтобы адаптировать модель VOSK, посетите [эту страницу](adaptate_vosk/README.md)
-
-Чтобы дообучить модель классификации, можно использовать [блокнот в google-colab]("")
