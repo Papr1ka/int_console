@@ -76,6 +76,7 @@ Peak RAM за всё время
 │   ├── generated.csv
 │   ├── trans_text_all.csv
 │   ├── Порождение_аугментированных_команд.csv
+│   ├── Работа_с_текстом_и_ключ_словами
 │   └── Обучение_BERT_классификатора.ipynb
 ├── poetry.lock
 ├── pyproject.toml
@@ -90,9 +91,6 @@ Peak RAM за всё время
 │   └── validation_data_with_transcriptions.csv
 └── vosk-model-small-ru-0.22 - модель VOSK (аудио2текст)
 ```
-
-Линия обработки находится в файлах get_
-
 
 ## Развёртывание
 
